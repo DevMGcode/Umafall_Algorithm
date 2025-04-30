@@ -1,0 +1,2 @@
+# Ignorar solo los .log dentro de src
+/src/*.log
