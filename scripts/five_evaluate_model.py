@@ -1,3 +1,4 @@
+#five_evaluate_model.py
 import pandas as pd
 import joblib
 from sklearn.metrics import classification_report, confusion_matrix
@@ -6,27 +7,21 @@ import matplotlib.pyplot as plt
 import os
 
 def main():
-    # Crear carpeta evaluate si no existe
     os.makedirs('evaluate', exist_ok=True)
 
-    # Cargar modelo y datos de prueba desde carpeta models
     clf = joblib.load('models/random_forest_fall_detection_optimized.pkl')
     X_test = pd.read_csv('models/X_test.csv')
-    y_test = pd.read_csv('models/y_test.csv').squeeze()  # convertir a Series
+    y_test = pd.read_csv('models/y_test.csv').squeeze()
 
-    # Predecir
     y_pred = clf.predict(X_test)
 
-    # Reporte de clasificación
     report = classification_report(y_test, y_pred, target_names=['ADL', 'Fall'])
     print("Reporte de clasificación:")
     print(report)
 
-    # Guardar reporte en archivo de texto
     with open('evaluate/classification_report.txt', 'w') as f:
         f.write(report)
 
-    # Matriz de confusión
     cm = confusion_matrix(y_test, y_pred)
     plt.figure(figsize=(6,5))
     sns.heatmap(

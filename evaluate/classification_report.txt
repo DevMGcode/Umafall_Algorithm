@@ -1,8 +1,8 @@
               precision    recall  f1-score   support
 
-         ADL       0.73      0.78      0.75       162
-        Fall       0.29      0.23      0.25        62
+         ADL       0.71      0.43      0.54       162
+        Fall       0.26      0.53      0.35        62
 
-    accuracy                           0.63       224
-   macro avg       0.51      0.50      0.50       224
-weighted avg       0.60      0.63      0.61       224
+    accuracy                           0.46       224
+   macro avg       0.49      0.48      0.44       224
+weighted avg       0.58      0.46      0.49       224

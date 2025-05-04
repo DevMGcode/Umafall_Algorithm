@@ -1,3 +1,5 @@
+#one_extract_data_wrist_filter.py
+
 import zipfile
 import re
 import pandas as pd
@@ -7,7 +9,6 @@ def extract_wrist_data(file_content, file_name):
     lines = file_content.split('\n')
     metadata = {'file': file_name}
 
-    # Detectar tipo de actividad y subactividad
     if "_Fall_" in file_name:
         metadata['activity_type'] = "Fall"
         metadata['label'] = 1
@@ -40,7 +41,6 @@ def extract_wrist_data(file_content, file_name):
         metadata['label'] = None
         metadata['subactivity'] = "Unknown"
 
-    # Extraer metadatos personales
     for line in lines:
         if "Age:" in line:
             match = re.search(r'Age:\s*(\d+)', line)
@@ -59,7 +59,6 @@ def extract_wrist_data(file_content, file_name):
             if match:
                 metadata['weight'] = int(match.group(1))
 
-    # Identificar sensor muñeca
     wrist_sensor_id = None
     for line in lines:
         if "WRIST" in line and ";" in line:
@@ -70,7 +69,6 @@ def extract_wrist_data(file_content, file_name):
     if wrist_sensor_id is None:
         return []
 
-    # Extraer datos del sensor muñeca
     wrist_data = []
     for line in lines:
         if re.match(r'^\d+;\d+;', line):

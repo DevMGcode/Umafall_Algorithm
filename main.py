@@ -1,26 +1,35 @@
-from scripts.one_extract_data_wrist_filter import extract_and_filter_wrist_data
-from scripts.two_preprocess_extract_features import eda_on_wrist_data
-from scripts.three_eda import extract_features_from_folder
-from scripts.four_train_model import train_model
-from scripts.five_evaluate_model import evaluate_model
+def run_extraction():
+    import scripts.one_extract_data_wrist_filter as extract_wrist_data_script
+    extract_wrist_data_script.process_all_files(
+        "UMAFall_Dataset.zip",
+        "data/wrist_filtered/wrist_data_corrected.csv"
+    )
 
-def main():
-    print("🔧 Paso 1: Extracción y filtrado de datos...")
-    extract_and_filter_wrist_data("UMAFall_Dataset.zip", "data/raw")
+def run_preprocessing():
+    import scripts.two_preprocess_extract_features as preprocess_script
+    preprocess_script.preprocess_data(
+        "data/wrist_filtered/wrist_data_corrected.csv",
+        "data/wrist_filtered/preprocessed/wrist_data_preprocessed_segmented.csv",
+        "data/wrist_filtered/features/wrist_features.csv",
+        "data/wrist_filtered/features/wrist_features_optimized.csv"
+    )
 
-    print("📊 Paso 2: Análisis exploratorio...")
-    eda_on_wrist_data("data/wrist_filtered", "eda/two_eda_summary.cvs", "eda/plots/class_distribution.png")
+def run_eda():
+    import scripts.three_eda as eda_script
+    eda_script.run_eda()
 
-    print("📈 Paso 3: Extracción de características...")
-    extract_features_from_folder("data/wrist_filtered", "data/features/features.csv")
+def run_training():
+    import scripts.four_train_model as train_script
+    train_script.main()
 
-    print("🤖 Paso 4: Entrenamiento del modelo...")
-    train_model("data/features/features.csv", "models/random_forest_model.pkl")
-
-    print("✅ Paso 5: Evaluación del modelo...")
-    evaluate_model("data/features/features.csv", "models/random_forest_model.pkl")
-
-    print("🎉 Pipeline completo.")
+def run_evaluation():
+    import scripts.five_evaluate_model as evaluate_script
+    evaluate_script.main()
 
 if __name__ == "__main__":
-    main()
+    run_extraction()
+    run_preprocessing()
+    run_eda()
+    run_training()
+    run_evaluation()
+    print("Pipeline completado.")
