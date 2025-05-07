@@ -1,5 +1,5 @@
-import zipfile
 import os
+import zipfile
 import pandas as pd
 import numpy as np
 import re
@@ -11,13 +11,48 @@ import sys
 zip_path = 'UMAFall_Dataset.zip'
 extract_dir = 'UMAFall_Extracted/'
 unified_dir = 'unified_dataset/'
+test_files_dir = 'Test_files_selected/'
 
-# Extraer zip
-with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-    zip_ref.extractall(extract_dir)
+# 1. Extraer zip si no está extraído
+if not os.path.exists(extract_dir):
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_dir)
 
+# 2. Crear carpeta para archivos unificados y test crudos
 os.makedirs(unified_dir, exist_ok=True)
+os.makedirs(test_files_dir, exist_ok=True)
 
+# 3. Función para convertir archivo original al formato Test (X, Y, Z con índice)
+def convert_to_test_format(input_file, output_file):
+    df = pd.read_csv(input_file, comment='%', sep=';', header=None)
+    df_xyz = df[[2, 3, 4]]
+    df_xyz.columns = ['X', 'Y', 'Z']
+    df_xyz.to_csv(output_file, index=True)
+
+# 4. Generar archivos Test_Fall_1-5.csv y Test_ADL_1-5.csv
+def generate_test_files():
+    fall_files = [f for f in os.listdir(extract_dir) if f.endswith('.csv') and 'Fall' in f and 'ADL' not in f]
+    adl_files = [f for f in os.listdir(extract_dir) if f.endswith('.csv') and 'ADL' in f]
+
+    fall_files.sort()
+    adl_files.sort()
+
+    fall_files_5 = fall_files[:5]
+    adl_files_5 = adl_files[:5]
+
+    for i, file in enumerate(fall_files_5, 1):
+        input_path = os.path.join(extract_dir, file)
+        output_path = os.path.join(test_files_dir, f'Test_Fall_{i}.csv')
+        convert_to_test_format(input_path, output_path)
+
+    for i, file in enumerate(adl_files_5, 1):
+        input_path = os.path.join(extract_dir, file)
+        output_path = os.path.join(test_files_dir, f'Test_ADL_{i}.csv')
+        convert_to_test_format(input_path, output_path)
+
+    print('Archivos Test_Fall_1-5.csv y Test_ADL_1-5.csv generados en carpeta Test_files_selected')
+
+# 5. Funciones para parsear metadata y calcular características (igual que tu script original)
 def parse_metadata(file_path):
     metadata = {}
     with open(file_path, 'r') as f:
@@ -77,7 +112,7 @@ def compute_features(df, window_size_sec):
     else:
         df_win = df.iloc[max_idx - ws_samples // 2 : max_idx + ws_samples // 2]
 
-    df_win = df_win.copy()  # Evitar SettingWithCopyWarning
+    df_win = df_win.copy()
     df_win['N_HOR'] = np.sqrt(df_win['Y']**2 + df_win['Z']**2)
     df_win['N_VER'] = np.sqrt(df_win['X']**2 + df_win['Z']**2)
 
@@ -111,7 +146,6 @@ def process_file(file_path, window_size_sec):
     if features is None:
         return None
 
-    # Crear diccionario con File_Name primero
     features_new = {'File_Name': os.path.basename(file_path)}
     features_new.update(features)
     features_new.update(metadata)
@@ -121,8 +155,10 @@ def process_file(file_path, window_size_sec):
     return features_new
 
 def main():
+    # Primero generar los archivos test crudos
+    generate_test_files()
+
     window_sizes = [1.5, 2, 3]
-    os.makedirs(unified_dir, exist_ok=True)
 
     file_list = []
     for root, dirs, files in os.walk(extract_dir):
@@ -147,7 +183,6 @@ def main():
 
         df_out = pd.DataFrame(all_features)
 
-        # Reordenar columnas para que File_Name y metadata estén al inicio, excluyendo Specific_Activity
         cols_order = ['File_Name', 'Age', 'Height', 'Weight', 'Gender', 'Type_of_Movement', 'Fall_ADL', 'Act_Type']
         other_cols = [col for col in df_out.columns if col not in cols_order and col != 'Specific_Activity']
         df_out = df_out[cols_order + other_cols]
