@@ -1,0 +1,4 @@
+,precision,recall,count
+backwardFall,1.0,0.8391959798994975,199
+forwardFall,1.0,0.8781725888324873,197
+lateralFall,1.0,0.8888888888888888,162
